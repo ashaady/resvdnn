@@ -6,6 +6,7 @@ import StatusBadge from "@/components/admin/StatusBadge";
 import OrderDetailsModal from "@/components/admin/OrderDetailsModal";
 import { useOrders, Order, OrderStatus } from "@/context/OrdersContext";
 import { ChevronRight, Clock, User, Phone, RefreshCw } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "En attente",
