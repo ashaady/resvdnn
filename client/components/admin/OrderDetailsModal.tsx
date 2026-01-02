@@ -45,10 +45,10 @@ export default function OrderDetailsModal({
     }
   };
 
-  const handleStatusAction = async (action: string) => {
-    setLoadingAction(action);
+  const handleStatusAction = async (newStatus: OrderStatus) => {
+    setLoadingAction(newStatus);
     setTimeout(() => {
-      onStatusChange(order.id, action, noteText);
+      onStatusChange(order.id, newStatus, noteText);
       setLoadingAction(null);
     }, 500);
   };
@@ -65,6 +65,16 @@ export default function OrderDetailsModal({
     if (diffHours < 24) return `il y a ${diffHours}h`;
     const diffDays = Math.floor(diffHours / 24);
     return `il y a ${diffDays}j`;
+  };
+
+  const getActionLabel = (status: OrderStatus): string => {
+    const labels: Record<OrderStatus, string> = {
+      pending: "Confirmer & Préparer",
+      in_preparation: "Marquer comme prête",
+      ready: "Marquer comme livrée",
+      completed: "Complétée",
+    };
+    return labels[status];
   };
 
   const actions = statusActions[order.status] || [];
