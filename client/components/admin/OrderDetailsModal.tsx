@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Phone, MapPin, Clock, User, MessageSquare, Printer } from "lucide-react";
-import { Order } from "@/types/order";
+import { Order, OrderStatus } from "@/context/OrdersContext";
 import ActionButton from "./ActionButton";
 import StatusBadge from "./StatusBadge";
 
@@ -8,17 +8,15 @@ interface OrderDetailsModalProps {
   isOpen: boolean;
   order: Order | null;
   onClose: () => void;
-  onStatusChange: (orderId: string, newStatus: string, note?: string) => void;
+  onStatusChange: (orderId: string, newStatus: OrderStatus, note?: string) => void;
 }
 
-const statusActions: Record<string, string[]> = {
-  pending: ["confirm", "cancel"],
-  confirmed: ["prepare", "cancel"],
-  in_preparation: ["ready", "cancel"],
-  ready: ["deliver", "pickup"],
-  out_for_delivery: ["complete"],
+// Map order status to available actions
+const statusActions: Record<OrderStatus, OrderStatus[]> = {
+  pending: ["in_preparation"],
+  in_preparation: ["ready"],
+  ready: ["completed"],
   completed: [],
-  cancelled: [],
 };
 
 export default function OrderDetailsModal({
