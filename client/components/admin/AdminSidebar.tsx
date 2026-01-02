@@ -181,9 +181,9 @@ export default function AdminSidebar({
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-screen w-80 bg-[#6B3E26] shadow-lg transform transition-transform duration-300 z-40 md:translate-x-0 ${
+        className={`fixed left-0 top-0 h-screen w-80 bg-[#6B3E26] shadow-lg transform transition-transform duration-300 z-40 ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } md:sticky md:top-0`}
+        } md:translate-x-0`}
       >
         {/* Header */}
         <div className="border-b border-[#9C6B4A] px-6 py-6">
