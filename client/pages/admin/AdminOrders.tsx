@@ -348,6 +348,7 @@ export default function AdminOrders() {
           onStatusChange={(orderId, newStatus) => {
             updateOrderStatus(orderId, newStatus as OrderStatus);
             setShowOrderModal(false);
+            toast.success(`Statut de la commande ${orderId} mis à jour avec succès`);
           }}
         />
       </div>
