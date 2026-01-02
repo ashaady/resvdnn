@@ -290,15 +290,22 @@ export default function OrderDetailsModal({
 
                 <div className="space-y-3">
                   {actions.length > 0 ? (
-                    actions.map((action) => (
-                      <ActionButton
-                        key={action}
-                        action={action as any}
-                        onClick={() => handleStatusAction(action)}
-                        isLoading={loadingAction === action}
-                        fullWidth
-                        size="md"
-                      />
+                    actions.map((newStatus) => (
+                      <button
+                        key={newStatus}
+                        onClick={() => handleStatusAction(newStatus)}
+                        disabled={loadingAction === newStatus}
+                        className="w-full px-4 py-2 bg-[#F58220] hover:bg-[#E06E10] text-white rounded-lg font-lato font-semibold transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {loadingAction === newStatus ? (
+                          <>
+                            <span className="inline-block animate-spin">⟳</span>
+                            Traitement...
+                          </>
+                        ) : (
+                          getActionLabel(newStatus)
+                        )}
+                      </button>
                     ))
                   ) : (
                     <p className="text-sm text-[#999999] font-lato text-center py-4">
