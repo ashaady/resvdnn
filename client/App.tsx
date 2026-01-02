@@ -16,6 +16,7 @@ import Orders from "./pages/Orders";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProductsManagement from "./pages/admin/ProductsManagement";
+import AdminOrders from "./pages/admin/AdminOrders";
 import ManagerDashboardOverview from "./pages/manager/ManagerDashboardOverview";
 import ManagerDashboardProducts from "./pages/manager/ManagerDashboardProducts";
 import ManagerDashboardAnalytics from "./pages/manager/ManagerDashboardAnalytics";
@@ -107,6 +108,15 @@ const App = () => (
                   element={
                     <ProtectedRoute requiredRoles={["admin", "manager"]}>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/admin/orders"
+                  element={
+                    <ProtectedRoute requiredRoles={["admin", "manager"]}>
+                      <AdminOrders />
                     </ProtectedRoute>
                   }
                 />

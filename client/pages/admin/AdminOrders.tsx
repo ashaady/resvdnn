@@ -1,14 +1,30 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsCard from "@/components/admin/StatsCard";
 import StatusBadge from "@/components/admin/StatusBadge";
 import OrderDetailsModal from "@/components/admin/OrderDetailsModal";
-import { useOrders, Order } from "@/context/OrdersContext";
+import { useOrders, Order, OrderStatus } from "@/context/OrdersContext";
 import { ChevronRight, Clock, User, Phone, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-export default function AdminDashboard() {
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: "En attente",
+  in_preparation: "En préparation",
+  ready: "Prêt",
+  completed: "Complétée",
+};
+
+const STATUS_ICONS: Record<OrderStatus, string> = {
+  pending: "⏳",
+  in_preparation: "👨‍🍳",
+  ready: "✅",
+  completed: "🎉",
+};
+
+export default function AdminOrders() {
   const { orders, updateOrderStatus } = useOrders();
+  const [searchParams] = useSearchParams();
   const [filteredOrders, setFilteredOrders] = useState(orders);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -17,35 +33,61 @@ export default function AdminDashboard() {
   const [lastRefresh, setLastRefresh] = useState<string>("à l'instant");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Map URL status parameter to actual OrderStatus
+  const mapStatusParam = (param: string | null): OrderStatus | null => {
+    if (!param) return null;
+    const statusMap: Record<string, OrderStatus> = {
+      pending: "pending",
+      in_attente: "pending",
+      attente: "pending",
+      preparing: "in_preparation",
+      en_preparation: "in_preparation",
+      preparation: "in_preparation",
+      ready: "ready",
+      pret: "ready",
+      completed: "completed",
+      completee: "completed",
+    };
+    return statusMap[param.toLowerCase()] || null;
+  };
+
+  const statusFilter = mapStatusParam(searchParams.get("status"));
+
   // Calculate stats
-  const totalOrdersToday = orders.length;
+  const totalOrders = orders.length;
   const pendingOrders = orders.filter((o) => o.status === "pending").length;
   const preparingOrders = orders.filter(
     (o) => o.status === "in_preparation",
   ).length;
+  const readyOrders = orders.filter((o) => o.status === "ready").length;
 
   const avgPreparationTime =
     orders.length > 0
       ? Math.round(orders.reduce((sum) => sum + 15, 0) / orders.length)
       : 0;
 
-  // Filter orders based on search
+  // Filter orders based on status and search query
   useEffect(() => {
-    if (!searchQuery) {
-      setFilteredOrders(orders.slice(0, 10)); // Show latest 10
-      return;
+    let filtered = orders;
+
+    // Apply status filter
+    if (statusFilter) {
+      filtered = filtered.filter((order) => order.status === statusFilter);
     }
 
-    const query = searchQuery.toLowerCase();
-    setFilteredOrders(
-      orders.filter(
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
         (order) =>
           order.id.toLowerCase().includes(query) ||
           order.fullName.toLowerCase().includes(query) ||
           order.phone.toLowerCase().includes(query),
-      ),
-    );
-  }, [searchQuery, orders]);
+      );
+    }
+
+    setFilteredOrders(filtered.slice(0, 20)); // Show up to 20 orders
+  }, [searchQuery, orders, statusFilter]);
 
   // Auto-refresh orders every 5 seconds
   useEffect(() => {
@@ -53,7 +95,6 @@ export default function AdminDashboard() {
 
     const interval = setInterval(() => {
       setIsRefreshing(true);
-      // Simulate API call
       setTimeout(() => {
         setLastRefresh(getRelativeTime(new Date()));
         setIsRefreshing(false);
@@ -77,9 +118,14 @@ export default function AdminDashboard() {
     return `il y a ${diffDays}j`;
   };
 
+  const getStatusTitle = () => {
+    if (!statusFilter) return "Toutes les commandes";
+    return STATUS_LABELS[statusFilter];
+  };
+
   return (
     <AdminLayout
-      title="Dashboard"
+      title="Commandes"
       searchPlaceholder="Rechercher une commande, client..."
       onSearch={setSearchQuery}
     >
@@ -87,34 +133,30 @@ export default function AdminDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
           <StatsCard
-            title="Commandes du jour"
-            value={totalOrdersToday}
+            title="Total commandes"
+            value={totalOrders}
             icon="📦"
             trend={{ percentage: 12, positive: true }}
             borderColor="#F58220"
           />
           <StatsCard
-            title="En attente"
+            title={STATUS_LABELS.pending}
             value={pendingOrders}
-            icon="⏳"
+            icon={STATUS_ICONS.pending}
             trend={{ percentage: 5, positive: false }}
             borderColor="#F59E0B"
-            actionButton={{
-              label: "Voir",
-              onClick: () => console.log("View pending orders"),
-            }}
           />
           <StatsCard
-            title="En préparation"
+            title={STATUS_LABELS.in_preparation}
             value={preparingOrders}
-            icon="👨‍🍳"
+            icon={STATUS_ICONS.in_preparation}
             trend={{ percentage: 8, positive: true }}
             borderColor="#F58220"
           />
           <StatsCard
-            title="Temps moyen"
-            value={`${avgPreparationTime}min`}
-            icon="⏱️"
+            title={STATUS_LABELS.ready}
+            value={readyOrders}
+            icon={STATUS_ICONS.ready}
             trend={{ percentage: 3, positive: true }}
             borderColor="#3B82F6"
           />
@@ -126,7 +168,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 border-b border-[#D4AF37]">
             <div>
               <h2 className="text-xl font-playfair font-bold text-[#6B3E26]">
-                Commandes en direct
+                {getStatusTitle()}
               </h2>
               <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-2">
@@ -160,22 +202,6 @@ export default function AdminDashboard() {
                   {autoRefresh ? "Pause" : "Reprendre"}
                 </button>
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {["Toutes", "Nouvelles", "Urgent", "Livraison", "À emporter"].map(
-                (filter, idx) => (
-                  <button
-                    key={idx}
-                    className={`px-3 py-1.5 rounded-full text-sm font-lato font-semibold transition-colors ${
-                      idx === 0
-                        ? "bg-[#F58220] text-white"
-                        : "bg-[#F5F5F5] text-[#6B3E26] hover:bg-[#9C6B4A] hover:text-white"
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ),
-              )}
             </div>
           </div>
 
@@ -322,7 +348,7 @@ export default function AdminDashboard() {
           order={selectedOrder}
           onClose={() => setShowOrderModal(false)}
           onStatusChange={(orderId, newStatus) => {
-            updateOrderStatus(orderId, newStatus as any);
+            updateOrderStatus(orderId, newStatus as OrderStatus);
             setShowOrderModal(false);
             toast.success(
               `Statut de la commande ${orderId} mis à jour avec succès`,

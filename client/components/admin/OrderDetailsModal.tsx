@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { X, Phone, MapPin, Clock, User, MessageSquare, Printer } from "lucide-react";
-import { Order } from "@/types/order";
+import {
+  X,
+  Phone,
+  MapPin,
+  Clock,
+  User,
+  MessageSquare,
+  Printer,
+} from "lucide-react";
+import { Order, OrderStatus } from "@/context/OrdersContext";
 import ActionButton from "./ActionButton";
 import StatusBadge from "./StatusBadge";
 
@@ -8,17 +16,19 @@ interface OrderDetailsModalProps {
   isOpen: boolean;
   order: Order | null;
   onClose: () => void;
-  onStatusChange: (orderId: string, newStatus: string, note?: string) => void;
+  onStatusChange: (
+    orderId: string,
+    newStatus: OrderStatus,
+    note?: string,
+  ) => void;
 }
 
-const statusActions: Record<string, string[]> = {
-  pending: ["confirm", "cancel"],
-  confirmed: ["prepare", "cancel"],
-  in_preparation: ["ready", "cancel"],
-  ready: ["deliver", "pickup"],
-  out_for_delivery: ["complete"],
+// Map order status to available actions
+const statusActions: Record<OrderStatus, OrderStatus[]> = {
+  pending: ["in_preparation"],
+  in_preparation: ["ready"],
+  ready: ["completed"],
   completed: [],
-  cancelled: [],
 };
 
 export default function OrderDetailsModal({
@@ -28,7 +38,9 @@ export default function OrderDetailsModal({
   onStatusChange,
 }: OrderDetailsModalProps) {
   const [noteText, setNoteText] = useState("");
-  const [notes, setNotes] = useState<Array<{ text: string; author: string; date: string }>>([]);
+  const [notes, setNotes] = useState<
+    Array<{ text: string; author: string; date: string }>
+  >([]);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   if (!isOpen || !order) return null;
@@ -47,10 +59,10 @@ export default function OrderDetailsModal({
     }
   };
 
-  const handleStatusAction = async (action: string) => {
-    setLoadingAction(action);
+  const handleStatusAction = async (newStatus: OrderStatus) => {
+    setLoadingAction(newStatus);
     setTimeout(() => {
-      onStatusChange(order.id, action, noteText);
+      onStatusChange(order.id, newStatus, noteText);
       setLoadingAction(null);
     }, 500);
   };
@@ -69,16 +81,23 @@ export default function OrderDetailsModal({
     return `il y a ${diffDays}j`;
   };
 
+  const getActionLabel = (status: OrderStatus): string => {
+    const labels: Record<OrderStatus, string> = {
+      pending: "Confirmer & Préparer",
+      in_preparation: "Marquer comme prête",
+      ready: "Marquer comme livrée",
+      completed: "Complétée",
+    };
+    return labels[status];
+  };
+
   const actions = statusActions[order.status] || [];
 
   return (
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
       )}
 
       {/* Modal */}
@@ -121,7 +140,9 @@ export default function OrderDetailsModal({
                       Type Commande
                     </p>
                     <p className="font-playfair font-bold text-[#6B3E26]">
-                      {order.deliveryType === "delivery" ? "🚚 Livraison" : "🏠 À emporter"}
+                      {order.deliveryType === "delivery"
+                        ? "🚚 Livraison"
+                        : "🏠 À emporter"}
                     </p>
                   </div>
                   <div>
@@ -167,7 +188,9 @@ export default function OrderDetailsModal({
                   <div className="flex items-center gap-3">
                     <Phone size={18} className="text-[#F58220]" />
                     <div>
-                      <p className="text-xs font-lato text-[#999999]">Téléphone</p>
+                      <p className="text-xs font-lato text-[#999999]">
+                        Téléphone
+                      </p>
                       <a
                         href={`tel:${order.phone}`}
                         className="font-lato font-semibold text-[#F58220] hover:underline"
@@ -181,7 +204,9 @@ export default function OrderDetailsModal({
                     <div className="flex items-start gap-3">
                       <MapPin size={18} className="text-[#F58220] mt-1" />
                       <div>
-                        <p className="text-xs font-lato text-[#999999]">Adresse</p>
+                        <p className="text-xs font-lato text-[#999999]">
+                          Adresse
+                        </p>
                         <p className="font-lato font-semibold text-[#6B3E26]">
                           {order.address || "Non spécifiée"}
                         </p>
@@ -208,7 +233,10 @@ export default function OrderDetailsModal({
 
                 <div className="space-y-3">
                   {order.items?.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-3 border-b border-[#F5F5F5] last:border-0">
+                    <div
+                      key={idx}
+                      className="flex justify-between items-center py-3 border-b border-[#F5F5F5] last:border-0"
+                    >
                       <div>
                         <p className="font-lato font-semibold text-[#6B3E26]">
                           {item.name}
@@ -238,7 +266,9 @@ export default function OrderDetailsModal({
                     </span>
                   </div>
                   <div className="border-t border-[#D4AF37] pt-2 flex justify-between">
-                    <span className="font-playfair font-bold text-[#6B3E26]">Total</span>
+                    <span className="font-playfair font-bold text-[#6B3E26]">
+                      Total
+                    </span>
                     <span className="font-playfair font-bold text-[#F58220] text-xl">
                       {order.total.toLocaleString()} F
                     </span>
@@ -282,15 +312,22 @@ export default function OrderDetailsModal({
 
                 <div className="space-y-3">
                   {actions.length > 0 ? (
-                    actions.map((action) => (
-                      <ActionButton
-                        key={action}
-                        action={action as any}
-                        onClick={() => handleStatusAction(action)}
-                        isLoading={loadingAction === action}
-                        fullWidth
-                        size="md"
-                      />
+                    actions.map((newStatus) => (
+                      <button
+                        key={newStatus}
+                        onClick={() => handleStatusAction(newStatus)}
+                        disabled={loadingAction === newStatus}
+                        className="w-full px-4 py-2 bg-[#F58220] hover:bg-[#E06E10] text-white rounded-lg font-lato font-semibold transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {loadingAction === newStatus ? (
+                          <>
+                            <span className="inline-block animate-spin">⟳</span>
+                            Traitement...
+                          </>
+                        ) : (
+                          getActionLabel(newStatus)
+                        )}
+                      </button>
                     ))
                   ) : (
                     <p className="text-sm text-[#999999] font-lato text-center py-4">
@@ -310,8 +347,13 @@ export default function OrderDetailsModal({
                 <div className="space-y-3 mb-4">
                   {notes.length > 0 ? (
                     notes.map((note, idx) => (
-                      <div key={idx} className="bg-[#FFF8E7] border border-[#F58220] rounded p-3">
-                        <p className="text-sm font-lato text-[#6B3E26]">{note.text}</p>
+                      <div
+                        key={idx}
+                        className="bg-[#FFF8E7] border border-[#F58220] rounded p-3"
+                      >
+                        <p className="text-sm font-lato text-[#6B3E26]">
+                          {note.text}
+                        </p>
                         <p className="text-xs text-[#999999] font-lato mt-2">
                           {note.author} • {note.date}
                         </p>
