@@ -5,7 +5,7 @@ import StatusBadge from "@/components/admin/StatusBadge";
 import OrderDetailsModal from "@/components/admin/OrderDetailsModal";
 import { useOrders, Order } from "@/context/OrdersContext";
 import { ChevronRight, Clock, User, Phone, RefreshCw } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 export default function AdminDashboard() {
   const { orders, updateOrderStatus } = useOrders();
