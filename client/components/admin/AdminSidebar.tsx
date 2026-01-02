@@ -49,7 +49,10 @@ export default function AdminSidebar({
       submenu: [
         { label: "Toutes", href: "/admin/orders" },
         { label: "En attente", href: "/admin/orders?status=pending" },
-        { label: "En préparation", href: "/admin/orders?status=in_preparation" },
+        {
+          label: "En préparation",
+          href: "/admin/orders?status=in_preparation",
+        },
         { label: "Prêt à livrer", href: "/admin/orders?status=ready" },
       ],
     },

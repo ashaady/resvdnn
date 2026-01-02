@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { X, Phone, MapPin, Clock, User, MessageSquare, Printer } from "lucide-react";
+import {
+  X,
+  Phone,
+  MapPin,
+  Clock,
+  User,
+  MessageSquare,
+  Printer,
+} from "lucide-react";
 import { Order, OrderStatus } from "@/context/OrdersContext";
 import ActionButton from "./ActionButton";
 import StatusBadge from "./StatusBadge";
@@ -8,7 +16,11 @@ interface OrderDetailsModalProps {
   isOpen: boolean;
   order: Order | null;
   onClose: () => void;
-  onStatusChange: (orderId: string, newStatus: OrderStatus, note?: string) => void;
+  onStatusChange: (
+    orderId: string,
+    newStatus: OrderStatus,
+    note?: string,
+  ) => void;
 }
 
 // Map order status to available actions
@@ -26,7 +38,9 @@ export default function OrderDetailsModal({
   onStatusChange,
 }: OrderDetailsModalProps) {
   const [noteText, setNoteText] = useState("");
-  const [notes, setNotes] = useState<Array<{ text: string; author: string; date: string }>>([]);
+  const [notes, setNotes] = useState<
+    Array<{ text: string; author: string; date: string }>
+  >([]);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   if (!isOpen || !order) return null;
@@ -83,10 +97,7 @@ export default function OrderDetailsModal({
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={onClose}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
       )}
 
       {/* Modal */}
@@ -129,7 +140,9 @@ export default function OrderDetailsModal({
                       Type Commande
                     </p>
                     <p className="font-playfair font-bold text-[#6B3E26]">
-                      {order.deliveryType === "delivery" ? "🚚 Livraison" : "🏠 À emporter"}
+                      {order.deliveryType === "delivery"
+                        ? "🚚 Livraison"
+                        : "🏠 À emporter"}
                     </p>
                   </div>
                   <div>
@@ -175,7 +188,9 @@ export default function OrderDetailsModal({
                   <div className="flex items-center gap-3">
                     <Phone size={18} className="text-[#F58220]" />
                     <div>
-                      <p className="text-xs font-lato text-[#999999]">Téléphone</p>
+                      <p className="text-xs font-lato text-[#999999]">
+                        Téléphone
+                      </p>
                       <a
                         href={`tel:${order.phone}`}
                         className="font-lato font-semibold text-[#F58220] hover:underline"
@@ -189,7 +204,9 @@ export default function OrderDetailsModal({
                     <div className="flex items-start gap-3">
                       <MapPin size={18} className="text-[#F58220] mt-1" />
                       <div>
-                        <p className="text-xs font-lato text-[#999999]">Adresse</p>
+                        <p className="text-xs font-lato text-[#999999]">
+                          Adresse
+                        </p>
                         <p className="font-lato font-semibold text-[#6B3E26]">
                           {order.address || "Non spécifiée"}
                         </p>
@@ -216,7 +233,10 @@ export default function OrderDetailsModal({
 
                 <div className="space-y-3">
                   {order.items?.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-3 border-b border-[#F5F5F5] last:border-0">
+                    <div
+                      key={idx}
+                      className="flex justify-between items-center py-3 border-b border-[#F5F5F5] last:border-0"
+                    >
                       <div>
                         <p className="font-lato font-semibold text-[#6B3E26]">
                           {item.name}
@@ -246,7 +266,9 @@ export default function OrderDetailsModal({
                     </span>
                   </div>
                   <div className="border-t border-[#D4AF37] pt-2 flex justify-between">
-                    <span className="font-playfair font-bold text-[#6B3E26]">Total</span>
+                    <span className="font-playfair font-bold text-[#6B3E26]">
+                      Total
+                    </span>
                     <span className="font-playfair font-bold text-[#F58220] text-xl">
                       {order.total.toLocaleString()} F
                     </span>
@@ -325,8 +347,13 @@ export default function OrderDetailsModal({
                 <div className="space-y-3 mb-4">
                   {notes.length > 0 ? (
                     notes.map((note, idx) => (
-                      <div key={idx} className="bg-[#FFF8E7] border border-[#F58220] rounded p-3">
-                        <p className="text-sm font-lato text-[#6B3E26]">{note.text}</p>
+                      <div
+                        key={idx}
+                        className="bg-[#FFF8E7] border border-[#F58220] rounded p-3"
+                      >
+                        <p className="text-sm font-lato text-[#6B3E26]">
+                          {note.text}
+                        </p>
                         <p className="text-xs text-[#999999] font-lato mt-2">
                           {note.author} • {note.date}
                         </p>

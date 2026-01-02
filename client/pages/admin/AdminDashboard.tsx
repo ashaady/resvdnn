@@ -136,7 +136,9 @@ export default function AdminDashboard() {
                   </p>
                 </div>
                 <p className="text-xs text-[#999999] font-lato">
-                  {lastRefresh !== "à l'instant" ? `Actualisé ${lastRefresh}` : "Actualisé à l'instant"}
+                  {lastRefresh !== "à l'instant"
+                    ? `Actualisé ${lastRefresh}`
+                    : "Actualisé à l'instant"}
                 </p>
                 <button
                   onClick={() => setIsRefreshing(true)}
@@ -322,7 +324,9 @@ export default function AdminDashboard() {
           onStatusChange={(orderId, newStatus) => {
             updateOrderStatus(orderId, newStatus as any);
             setShowOrderModal(false);
-            toast.success(`Statut de la commande ${orderId} mis à jour avec succès`);
+            toast.success(
+              `Statut de la commande ${orderId} mis à jour avec succès`,
+            );
           }}
         />
       </div>
